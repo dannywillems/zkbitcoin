@@ -1,18 +1,13 @@
 use std::{
     collections::{BTreeMap, HashMap},
     net::SocketAddr,
-    str::FromStr,
     sync::{Arc, RwLock},
     time::{Duration, SystemTime},
 };
 
 use anyhow::{Context, Result};
-use bitcoin::{
-    hex::DisplayHex,
-    key::{TapTweak, UntweakedPublicKey},
-    secp256k1, taproot, TapSighashType, Witness,
-};
-use frost_secp256k1_tr::{Ciphersuite, Group, Identifier};
+use bitcoin::{secp256k1, taproot, TapSighashType, Witness};
+use frost_secp256k1_tr::Identifier;
 use futures::future::join_all;
 use itertools::Itertools;
 use jsonrpsee::{server::Server, RpcModule};
@@ -20,14 +15,13 @@ use jsonrpsee_core::RpcResult;
 use jsonrpsee_types::{ErrorObjectOwned, Params};
 use log::{debug, error, info, warn};
 use rand::seq::SliceRandom;
-use secp256k1::XOnlyPublicKey;
 use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
 
 use crate::{
     bob_request::{BobRequest, BobResponse},
     committee::node::Round1Response,
-    constants::{KEEPALIVE_MAX_RETRIES, KEEPALIVE_WAIT_SECONDS, ZKBITCOIN_PUBKEY},
+    constants::{KEEPALIVE_MAX_RETRIES, KEEPALIVE_WAIT_SECONDS},
     frost,
     json_rpc_stuff::{json_rpc_request, RpcCtx},
     mpc_sign_tx::get_digest_to_hash,
